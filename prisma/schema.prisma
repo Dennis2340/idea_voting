@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("SUPABASE_DATABASE_URL")
+  directUrl    = env("SUPABASE_DIRECT_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id        String    @id @unique @default(uuid()) @db.VarChar(191)
+  name      String
+  email     String    @unique
+  ideas     Idea[]    // Relation to ideas submitted by the user
+  votes     Vote[]    // Relation to votes made by the user
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Idea {
+  id          String    @id @unique @default(uuid()) @db.VarChar(191)
+  title       String    // Title of the idea
+  description String    // Description of the idea
+  userId      String    // Foreign key to the User model
+  user        User      @relation(fields: [userId], references: [id])
+  votes       Vote[]    // Relation to votes associated with the idea
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Vote {
+  id        String    @id @unique @default(uuid()) @db.VarChar(191)
+  userId    String    // Foreign key to the User model
+  ideaId    String    // Foreign key to the Idea model
+  value     Boolean   // True for upvote, False for downvote
+  user      User      @relation(fields: [userId], references: [id])
+  idea      Idea      @relation(fields: [ideaId], references: [id])
+  createdAt DateTime  @default(now())
+}
